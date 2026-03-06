@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GM Store Ultimate Fixed</title>
+<title>GM Store Ultimate Fixed Colorful</title>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <style>
 :root{
@@ -17,9 +17,15 @@
 body{
   font-family:Arial,sans-serif;
   margin:0;
-  background:var(--bg-light);
+  background: linear-gradient(135deg, #36d1dc, #5b86e5, #ff9966, #ff5e62);
+  background-size:400% 400%;
+  animation:bg 15s infinite alternate;
   color:var(--text-light);
   transition:.3s;
+}
+@keyframes bg{
+  0%{background-position:left}
+  100%{background-position:right}
 }
 body.dark{
   background:var(--bg-dark);
@@ -53,15 +59,16 @@ button.edit{background:var(--secondary);}
   margin-top:20px;
 }
 .card{
-  background:white;
+  background:linear-gradient(145deg,#ffffff,#e0f7fa);
   border-radius:10px;
   padding:10px;
   box-shadow:0 3px 10px rgba(0,0,0,.3);
   overflow:hidden;
   transition:.3s;
+  border:2px solid transparent;
 }
 body.dark .card{background:#2c2c2c;color:white;}
-.card:hover{transform:scale(1.03);box-shadow:0 5px 15px rgba(0,0,0,.4);}
+.card:hover{transform:scale(1.03);box-shadow:0 5px 15px rgba(0,0,0,.4);border-color:var(--primary);}
 .card img.main-img{width:100%;height:180px;object-fit:cover;border-radius:6px;}
 .thumb-slider{display:flex;justify-content:center;gap:5px;margin-top:5px;}
 .thumb-slider img{width:50px;height:50px;border-radius:4px;cursor:pointer;border:2px solid transparent;transition:.3s;}
@@ -69,6 +76,7 @@ body.dark .card{background:#2c2c2c;color:white;}
 .price{font-size:18px;color:var(--primary);font-weight:bold;}
 .old{text-decoration:line-through;color:red;}
 .filter-bar{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px;}
+.category-badge{display:inline-block;background:#f39c12;color:white;padding:2px 8px;margin:2px;border-radius:6px;font-size:12px;font-weight:bold;}
 @media(max-width:768px){.products{grid-template-columns:repeat(auto-fill,minmax(180px,1fr));}input,select,button{width:100%;}}
 </style>
 </head>
@@ -113,6 +121,7 @@ body.dark .card{background:#2c2c2c;color:white;}
 
     <h2>Products</h2>
     <div class="products" id="productList"></div>
+    <div id="categoryList"><!-- Categories badges will appear here --></div>
     <div id="loadMore" style="text-align:center;margin-top:10px;">
       <button onclick="loadMore()">Load More</button>
     </div>
@@ -148,7 +157,6 @@ let products = JSON.parse(localStorage.getItem("products"))||[];
 let editIndex=null; let perPage=6; let currentPage=1;
 function save(){localStorage.setItem("products",JSON.stringify(products));}
 
-// ✅ Fully fixed product add
 function addProduct(){
   let name=document.getElementById("pname").value;
   let price=Number(document.getElementById("price").value);
@@ -202,7 +210,7 @@ function renderProducts(reset=false){
     categories.add(p.category);
     let final=(p.price-(p.price*p.discount/100)).toFixed(0);
     let card=document.createElement("div");card.className="card";
-    card.innerHTML=`<img src="${p.images[0]}" class="main-img" id="mainImg${i}"><h3>${p.name}</h3><div>Category: ${p.category}</div><div class="old">PKR ${p.price}</div><div class="price">PKR ${final}</div><div>Stock: ${p.stock}</div><div class="thumb-slider" id="slider${i}"></div><button onclick="orderProduct(${i})">Order WhatsApp</button><button onclick="editProduct(${i})" class="edit">Edit</button><button onclick="deleteProduct(${i})" class="delete">Delete</button>`;
+    card.innerHTML=`<img src="${p.images[0]}" class="main-img" id="mainImg${i}"><h3>${p.name}</h3><div class="category-badge">${p.category}</div><div class="old">PKR ${p.price}</div><div class="price">PKR ${final}</div><div>Stock: ${p.stock}</div><div class="thumb-slider" id="slider${i}"></div><button onclick="orderProduct(${i})">Order WhatsApp</button><button onclick="editProduct(${i})" class="edit">Edit</button><button onclick="deleteProduct(${i})" class="delete">Delete</button>`;
     list.appendChild(card);
     let slider=document.getElementById(`slider${i}`);
     p.images.forEach((img,j)=>{
@@ -211,8 +219,15 @@ function renderProducts(reset=false){
       slider.appendChild(thumb);
     });
   });
+
+  // Update Category Filter Dropdown
   let sel=document.getElementById("categoryFilter");let current=sel.value;sel.innerHTML='<option value="">All Categories</option>';
   categories.forEach(c=>{let opt=document.createElement("option");opt.value=c;opt.text=c;if(c==current)opt.selected=true;sel.appendChild(opt);});
+
+  // Update Category Badge List
+  let catList=document.getElementById("categoryList");catList.innerHTML="";
+  categories.forEach(c=>{let span=document.createElement("span");span.className="category-badge";span.textContent=c;catList.appendChild(span);});
+
   document.getElementById("loadMore").style.display=(filtered.length>slice.length)?"block":"none";
 }
 
